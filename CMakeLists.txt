@@ -40,4 +40,4 @@ add_executable(generator generator.cpp ${sources} ${headers})
 
 # add libraries
 set(GLFW_LIBS X11 rt m dl pthread)
-target_link_libraries(generator glfw3 ${GLFW_LIBS})
+target_link_libraries(generator glfw ${GLFW_LIBS})
