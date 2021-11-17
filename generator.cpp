@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -12,8 +13,14 @@
 const int WINDOW_WIDTH = 500;
 const int WINDOW_HEIGHT = 500;
 
+const std::filesystem::path TRAIN_DIR("train");
+const std::filesystem::path TEST_DIR("test");
+
 // uint8_t WINDOW_COLOR[4] = {0xdd, 0xcc, 0xff, 0xff};
 const double INITIAL_WINDOW_COLOR[4] = {0x00/255., 0x00/255., 0x00/255., 0xff/255.};
+
+// when true, rendering begins
+bool shouldStartRendering = false;
 
 // callback to resize the framebuffer if the user resizes the window
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -25,6 +32,10 @@ void process_input(GLFWwindow *window) {
   // exit on ESC
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
+  // start rendering on SPACE
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    shouldStartRendering = true;
   }
 }
 
@@ -103,14 +114,49 @@ int main() {
   constexpr int numrots = 36*2;
   constexpr float step = (maxrot - minrot)/(numrots - 1);
 
-  /* very basic render loop */
-  while (!glfwWindowShouldClose(window)) {
+  std::cerr << "creating output directories..." << std::endl;
+  // try to create train and test directories
+  if (std::filesystem::exists(TRAIN_DIR)) {
+    if (!std::filesystem::is_empty(TRAIN_DIR)) {
+      std::cerr << "cannot create training dir: exists and is not empty." << std::endl;
+      return 0;
+    }
+  } else {
+    if (!std::filesystem::create_directory(TRAIN_DIR)) {
+      std::cerr << "failed to create training dir" << std::endl;
+      return 0;
+    }
+  }
+  if (std::filesystem::exists(TEST_DIR)) {
+    if (!std::filesystem::is_empty(TEST_DIR)) {
+      std::cerr << "cannot create test dir: exists and is not empty." << std::endl;
+      return 0;
+    }
+  } else {
+    if (!std::filesystem::create_directory(TEST_DIR)) {
+      std::cerr << "failed to create test dir" << std::endl;
+      return 0;
+    }
+  }  std::cerr << "done." << std::endl;
+  
+  // wait in a basic loop
+  while (!glfwWindowShouldClose(window) && !shouldStartRendering) {
     process_input(window);
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
+  if (glfwWindowShouldClose(window)) {
+    return 0;
+  }
+
+  // generate training data
   for (int i = 0; i < numrots; i++) {
+    // check for premature exit
+    if (glfwWindowShouldClose(window)) {
+      return 0;
+    }
+    
     float angle = (minrot + step*i);
 
     // glClearColor(0xdd/255., 0xcc/255., 0xff/255., 0xff/255.);
@@ -128,7 +174,7 @@ int main() {
     std::snprintf(buffer, 128, "%06.2f", angle);
     std::string fileName(buffer);
     fileName = fileName + ".png";
-    save_image(window, fileName.c_str());
+    save_image(window, (TRAIN_DIR / fileName).c_str());
     
     glfwSwapBuffers(window);
     glfwPollEvents();
