@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#include <stdlib.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -151,7 +152,7 @@ int main() {
   }
 
   // generate training data
-  for (int i = 0; i < numrots; i++) {
+  for (int i = 0; i < numrots; ++i) {
     // check for premature exit
     if (glfwWindowShouldClose(window)) {
       return 0;
@@ -176,6 +177,36 @@ int main() {
     fileName = fileName + ".png";
     save_image(window, (TRAIN_DIR / fileName).c_str());
     
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+  }
+
+  // generate test data
+  for (int i = 0; i < (int)numrots / 5 /* 20% */; ++i) {
+    // check for premature exit
+    if (glfwWindowShouldClose(window)) {
+      return 0;
+    }
+
+    float angle = (rand() % 36000) / 100.;
+
+    // glClearColor(0xdd/255., 0xcc/255., 0xff/255., 0xff/255.);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // use our shader to draw our vertices as a triangle
+    simpleShader.use();
+    // simpleShader.set3Vec("triColor", 0.85f, 0.85f, 0.85f);
+    simpleShader.set3Vec("triColor", 1.0f, 1.0f, 1.0f);
+    simpleShader.setFloat("theta", angle * M_PI/180.);
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    char buffer[128];
+    std::snprintf(buffer, 128, "%06.2f", angle);
+    std::string fileName(buffer);
+    fileName = fileName + ".png";
+    save_image(window, (TEST_DIR / fileName).c_str());
+
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
