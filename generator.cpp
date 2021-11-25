@@ -10,6 +10,7 @@
 #include "stb/stb_image_write.h"
 
 #include "shaderClass.h"
+#include "triangle.h"
 
 const int WINDOW_WIDTH = 500;
 const int WINDOW_HEIGHT = 500;
@@ -56,6 +57,8 @@ void save_image(GLFWwindow *window, const char *fn) {
 #define glClearColorByteArray(color) \
   glClearColor(color[0] / 255., color[1] / 255., color[2] / 255., color[3] / 255.)
 
+// generate xDisp and yDisp
+
 int main() {
   /* initialise a GLFW window (LearnOpenGL 4) */
   glfwInit();
@@ -89,21 +92,14 @@ int main() {
 
   /* construct vertices for a scalene triangle -- this has no
      rotational symmetry*/
-  float vertices[] =
+  float vertices[6] =
     {
-      -0.5f, -0.33333333f, 0.0f,
-      0.75f, -0.33333333f, 0.0f,
-      -0.25f, 0.66666667f, 0.0f
+      -0.5f, -0.33333333f,
+      0.75f, -0.33333333f,
+      -0.25f, 0.66666667f
     };
-  GLuint VBO;
-  glGenBuffers(1, &VBO);
-  GLuint VAO;
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
+  // construct Triangle object
+  Triangle scalene(vertices);
 
   // build the shader program
   Shader simpleShader("./shaders/simpleVertShader.glsl", "./shaders/simpleFragShader.glsl");
@@ -159,8 +155,11 @@ int main() {
     }
     
     float angle = (minrot + step*i);
+    // generate the displacements in spherical polar coordinates
+    float xDisp;
+    float yDisp;
+    scalene.GenerateDisplacements(xDisp, yDisp);
 
-    // glClearColor(0xdd/255., 0xcc/255., 0xff/255., 0xff/255.);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // use our shader to draw our vertices as a triangle
@@ -168,8 +167,9 @@ int main() {
     // simpleShader.set3Vec("triColor", 0.85f, 0.85f, 0.85f);
     simpleShader.set3Vec("triColor", 1.0f, 1.0f, 1.0f);
     simpleShader.setFloat("theta", angle * M_PI/180.);
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    simpleShader.setFloat("xDisp", xDisp);
+    simpleShader.setFloat("yDisp", yDisp);
+    scalene.Draw();
 
     char buffer[128];
     std::snprintf(buffer, 128, "%06.2f", angle);
@@ -182,15 +182,19 @@ int main() {
   }
 
   // generate test data
-  for (int i = 0; i < (int)numrots / 5 /* 20% */; ++i) {
+  constexpr int numtests = numrots / 2;
+  for (int i = 0; i < numtests; ++i) {
     // check for premature exit
     if (glfwWindowShouldClose(window)) {
       return 0;
     }
 
     float angle = (rand() % 36000) / 100.;
+    // generate the displacements in spherical polar coordinates
+    float xDisp;
+    float yDisp;
+    scalene.GenerateDisplacements(xDisp, yDisp);
 
-    // glClearColor(0xdd/255., 0xcc/255., 0xff/255., 0xff/255.);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // use our shader to draw our vertices as a triangle
@@ -198,8 +202,9 @@ int main() {
     // simpleShader.set3Vec("triColor", 0.85f, 0.85f, 0.85f);
     simpleShader.set3Vec("triColor", 1.0f, 1.0f, 1.0f);
     simpleShader.setFloat("theta", angle * M_PI/180.);
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    simpleShader.setFloat("xDisp", xDisp);
+    simpleShader.setFloat("yDisp", yDisp);
+    scalene.Draw();
 
     char buffer[128];
     std::snprintf(buffer, 128, "%06.2f", angle);

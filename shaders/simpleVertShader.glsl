@@ -2,6 +2,8 @@
 layout (location = 0) in vec3 aPos;
 
 uniform float theta;
+uniform float xDisp;
+uniform float yDisp;
 
 void main() {
      mat3 rotMatrix;
@@ -9,5 +11,5 @@ void main() {
      rotMatrix[1] = vec3(sin(theta), cos(theta), 0);
      rotMatrix[2] = vec3(0, 0, 1);
      vec3 newPos = rotMatrix * aPos;
-     gl_Position = vec4(newPos.x, newPos.y, newPos.z, 1.0);
+     gl_Position = vec4(newPos.x+xDisp, newPos.y+yDisp, newPos.z, 1.0);
 }
