@@ -19,7 +19,7 @@ private:
 public:
   Triangle(const float vertiecs[9]);
   ~Triangle() {};
-  void GenerateDisplacements(float &outXDisp, float &outYDisp, float multiplier);
+  void GenerateDisplacements(float &outXDisp, float &outYDisp, float multiplier=1.0);
   void Draw();
 };
 

@@ -109,6 +109,7 @@ int main() {
   constexpr float minrot = 0;
   constexpr float maxrot = 355;
   constexpr int numrots = 36*2;
+  constexpr int numPerRot = 5;
   constexpr float step = (maxrot - minrot)/(numrots - 1);
 
   std::cerr << "creating output directories..." << std::endl;
@@ -155,30 +156,34 @@ int main() {
     }
     
     float angle = (minrot + step*i);
-    // generate the displacements in spherical polar coordinates
-    float xDisp;
-    float yDisp;
-    scalene.GenerateDisplacements(xDisp, yDisp);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    // generate multiple images for each angle
+    for (int j = 0; j < numPerRot; ++j) {
+      // generate the displacements in spherical polar coordinates
+      float xDisp;
+      float yDisp;
+      scalene.GenerateDisplacements(xDisp, yDisp);
 
-    // use our shader to draw our vertices as a triangle
-    simpleShader.use();
-    // simpleShader.set3Vec("triColor", 0.85f, 0.85f, 0.85f);
-    simpleShader.set3Vec("triColor", 1.0f, 1.0f, 1.0f);
-    simpleShader.setFloat("theta", angle * M_PI/180.);
-    simpleShader.setFloat("xDisp", xDisp);
-    simpleShader.setFloat("yDisp", yDisp);
-    scalene.Draw();
+      glClear(GL_COLOR_BUFFER_BIT);
 
-    char buffer[128];
-    std::snprintf(buffer, 128, "%06.2f", angle);
-    std::string fileName(buffer);
-    fileName = fileName + ".png";
-    save_image(window, (TRAIN_DIR / fileName).c_str());
-    
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+      // use our shader to draw our vertices as a triangle
+      simpleShader.use();
+      // simpleShader.set3Vec("triColor", 0.85f, 0.85f, 0.85f);
+      simpleShader.set3Vec("triColor", 1.0f, 1.0f, 1.0f);
+      simpleShader.setFloat("theta", angle * M_PI / 180.);
+      simpleShader.setFloat("xDisp", xDisp);
+      simpleShader.setFloat("yDisp", yDisp);
+      scalene.Draw();
+
+      char buffer[128];
+      std::snprintf(buffer, 128, "%02d_%06.2f", j, angle);
+      std::string fileName(buffer);
+      fileName = fileName + ".png";
+      save_image(window, (TRAIN_DIR / fileName).c_str());
+
+      glfwSwapBuffers(window);
+      glfwPollEvents();
+    }
   }
 
   // generate test data

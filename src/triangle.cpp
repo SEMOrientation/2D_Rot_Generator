@@ -40,7 +40,7 @@ Triangle::Triangle(const float vertices[6])
   std::cout << "Max Distance: " << fMaxDistance << "\nMax distance mod: " << fMaxDistanceMod << std::endl;
 }
 
-void Triangle::GenerateDisplacements(float &outXDisp, float &outYDisp, float multiplier = 1.0) {
+void Triangle::GenerateDisplacements(float &outXDisp, float &outYDisp, float multiplier) {
   // generate a random float between 0 and fMaxDistance via fMaxDistanceMod
   float rDisp = (float)(rand() % fMaxDistanceMod) / maxDistancePower * multiplier;
   float thetaDisp = ((rand() % 36000) / 100.) * M_PI/180.;
