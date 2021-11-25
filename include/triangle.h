@@ -11,6 +11,7 @@
 
 class Triangle {
 private:
+  float fCOM[2];
   float fVertices[9];
   float fMaxDistance;
   int fMaxDistanceMod;

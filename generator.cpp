@@ -159,7 +159,7 @@ int main() {
 
     // generate multiple images for each angle
     for (int j = 0; j < numPerRot; ++j) {
-      // generate the displacements in spherical polar coordinates
+      // generate the displacements
       float xDisp;
       float yDisp;
       scalene.GenerateDisplacements(xDisp, yDisp);
@@ -195,7 +195,7 @@ int main() {
     }
 
     float angle = (rand() % 36000) / 100.;
-    // generate the displacements in spherical polar coordinates
+    // generate the displacements
     float xDisp;
     float yDisp;
     scalene.GenerateDisplacements(xDisp, yDisp);

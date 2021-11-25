@@ -7,8 +7,11 @@
 const int maxDistancePlaces = MAX_DISTANCE_PLACES;
 const int maxDistancePower = pow(10.0, maxDistancePlaces);
 
+// constexpr int perCoord = 2;
+// constexpr int arrayLength = 3*perCoord;
+
 Triangle::Triangle(const float vertices[6])
-    : fMaxDistance(0), fMaxDistanceMod(0) {
+  : fMaxDistance(0), fMaxDistanceMod(0) {
   // copy vertices to internal
   std::copy(&vertices[0], &vertices[1]+1, &fVertices[0]);
   std::copy(&vertices[2], &vertices[3]+1, &fVertices[3]);
@@ -17,6 +20,26 @@ Triangle::Triangle(const float vertices[6])
   fVertices[2] = 0.0;
   fVertices[5] = 0.0;
   fVertices[8] = 0.0;
+
+  // find COM of triangle
+  fCOM[0] = 0.0;
+  fCOM[1] = 0.0;
+  for (int i = 0; i < 6; i += 2) {
+    fCOM[0] += vertices[i];
+    fCOM[1] += vertices[i+1];
+  }
+  fCOM[0] /= 3;
+  fCOM[1] /= 3;
+
+  // adjust vertices such that triangle is central
+  // x coords
+  fVertices[0] -= fCOM[0];
+  fVertices[3] -= fCOM[0];
+  fVertices[6] -= fCOM[0];
+  // y coords
+  fVertices[1] -= fCOM[1];
+  fVertices[4] -= fCOM[1];
+  fVertices[6] -= fCOM[1];
 
   // construct OGL structures
   glGenBuffers(1, &VBO);
@@ -28,16 +51,14 @@ Triangle::Triangle(const float vertices[6])
   glEnableVertexAttribArray(0);
 
   // determine max distance triangle can be displaced
-  constexpr int perCoord = 2;
-  constexpr int arrayLength = 3*perCoord;
-  for (int i = 0; i < arrayLength; i+=perCoord) {
-    float distance = sqrt(vertices[i]*vertices[i] + vertices[i+1]*vertices[i+1]);
+  for (int i = 0; i < 9; i+=3) {
+    float distance = sqrt(fVertices[i]*fVertices[i] + fVertices[i+1]*fVertices[i+1]);
     if (distance > fMaxDistance) {
       fMaxDistance = distance;
     }
   }
   fMaxDistanceMod = (float)(1.0 - floorTo(fMaxDistance, maxDistancePlaces)) * maxDistancePower;
-  std::cout << "Max Distance: " << fMaxDistance << "\nMax distance mod: " << fMaxDistanceMod << std::endl;
+  std::cerr << "Max Distance: " << fMaxDistance << "\nMax distance mod: " << fMaxDistanceMod << std::endl;
 }
 
 void Triangle::GenerateDisplacements(float &outXDisp, float &outYDisp, float multiplier) {
