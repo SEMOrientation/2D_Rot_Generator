@@ -11,9 +11,12 @@
 
 #include "shaderClass.h"
 #include "triangle.h"
+#include "progressBar.h"
 
-const int WINDOW_WIDTH = 500;
-const int WINDOW_HEIGHT = 500;
+constexpr int PROGRESS_BAR_SIZE = 30;
+
+const int WINDOW_WIDTH = 512;
+const int WINDOW_HEIGHT = 512;
 
 const std::filesystem::path TRAIN_DIR("train");
 const std::filesystem::path TEST_DIR("test");
@@ -109,7 +112,7 @@ int main() {
   constexpr float minrot = 0;
   constexpr float maxrot = 355;
   constexpr int numrots = 36*2;
-  constexpr int numPerRot = 5;
+  constexpr int numPerRot = 10;
   constexpr float step = (maxrot - minrot)/(numrots - 1);
 
   std::cerr << "creating output directories..." << std::endl;
@@ -149,6 +152,8 @@ int main() {
   }
 
   // generate training data
+  std::cerr << "Generating training data...";
+  ProgressBar trainBar(PROGRESS_BAR_SIZE, 0, numrots*numPerRot, true);
   for (int i = 0; i < numrots; ++i) {
     // check for premature exit
     if (glfwWindowShouldClose(window)) {
@@ -183,11 +188,16 @@ int main() {
 
       glfwSwapBuffers(window);
       glfwPollEvents();
+      ++trainBar;
+      trainBar.Display();
     }
   }
+  std::cerr << std::endl;
 
   // generate test data
-  constexpr int numtests = numrots / 2;
+  constexpr int numtests = 5000;
+  std::cerr << "Generating test data...";
+  ProgressBar testBar(PROGRESS_BAR_SIZE, 0, numtests, true);
   for (int i = 0; i < numtests; ++i) {
     // check for premature exit
     if (glfwWindowShouldClose(window)) {
@@ -219,8 +229,11 @@ int main() {
 
     glfwSwapBuffers(window);
     glfwPollEvents();
+    ++testBar;
+    testBar.Display();
   }
 
   glfwTerminate();
+  std::cerr << std::endl;
   return 0;
 }
