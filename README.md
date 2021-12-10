@@ -19,6 +19,6 @@ The program can then be executed as `./generator`
 
 Upon running the program, you will see an empty, black window. You should use this opportunity to ensure the window is using the size defined in the source. It must be a square window and should not be maximised or otherwise resized, else the images will be stretched and the triangle will be warped by the rotations.
 
-Once the window appears correctly, press SPACE to render all rotations. The triangle will appear in the window and will rotate, with an image being saved for each rotation. When all rotations have been saved, the program will exit automatically.
+Once the window appears correctly, press SPACE to render all rotations. The triangle will appear in the window and will rotate, with an image being saved for each rotation. When all rotations have been saved, the program will exit automatically. Alternatively, ESC can be pressed to exit without starting the render.
 
-At any point, ESC can be pressed to stop and exit gracefully without starting/continuing rendering.
+At any point, the window can be closed (e.g. by pressing ALT+F4) and the program will stop rendering and exit gracefully.
