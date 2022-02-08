@@ -12,6 +12,8 @@
 #include "shaderClass.h"
 #include "triangle.h"
 #include "progressBar.h"
+#include "contrast.h"
+#include "utils.h"
 
 constexpr int PROGRESS_BAR_SIZE = 30;
 
@@ -115,6 +117,11 @@ int main() {
   constexpr int numPerRot = 10;
   constexpr float step = (maxrot - minrot)/(numrots - 1);
 
+  constexpr float maxContrast = 1;
+  constexpr float minContrast = 0.9;
+  constexpr float maxBrightness = 1;
+  constexpr float minBrightness = 0.75;
+
   std::cerr << "creating output directories..." << std::endl;
   // try to create train and test directories
   if (std::filesystem::exists(TRAIN_DIR)) {
@@ -169,12 +176,20 @@ int main() {
       float yDisp;
       scalene.GenerateDisplacements(xDisp, yDisp);
 
+      // generate a random brightness/contrast
+      float brightness = randFloat(minBrightness, maxBrightness);
+      float contrast = randFloat(minContrast, maxContrast);
+      // set the background
+      float bgShade = findBg(brightness, contrast);
+      float bgColour[4] = {bgShade, bgShade, bgShade, 1.0};
+      glClearColorArray(bgColour);
+
       glClear(GL_COLOR_BUFFER_BIT);
 
       // use our shader to draw our vertices as a triangle
       simpleShader.use();
       // simpleShader.set3Vec("triColor", 0.85f, 0.85f, 0.85f);
-      simpleShader.set3Vec("triColor", 1.0f, 1.0f, 1.0f);
+      simpleShader.set3Vec("triColor", brightness, brightness, brightness);
       simpleShader.setFloat("theta", angle * M_PI / 180.);
       simpleShader.setFloat("xDisp", xDisp);
       simpleShader.setFloat("yDisp", yDisp);
@@ -210,19 +225,27 @@ int main() {
     float yDisp;
     scalene.GenerateDisplacements(xDisp, yDisp);
 
+    // generate a random brightness/contrast
+    float brightness = randFloat(minBrightness, maxBrightness);
+    float contrast = randFloat(minContrast, maxContrast);
+    // set the background
+    float bgShade = findBg(brightness, contrast);
+    float bgColour[4] = {bgShade, bgShade, bgShade, 1.0};
+    glClearColorArray(bgColour);
+    
     glClear(GL_COLOR_BUFFER_BIT);
 
     // use our shader to draw our vertices as a triangle
     simpleShader.use();
     // simpleShader.set3Vec("triColor", 0.85f, 0.85f, 0.85f);
-    simpleShader.set3Vec("triColor", 1.0f, 1.0f, 1.0f);
+    simpleShader.set3Vec("triColor", brightness, brightness, brightness);
     simpleShader.setFloat("theta", angle * M_PI/180.);
     simpleShader.setFloat("xDisp", xDisp);
     simpleShader.setFloat("yDisp", yDisp);
     scalene.Draw();
 
     char buffer[128];
-    std::snprintf(buffer, 128, "%06.2f", angle);
+    std::snprintf(buffer, 128, "%04d_%06.2f", i, angle);
     std::string fileName(buffer);
     fileName = fileName + ".png";
     save_image(window, (TEST_DIR / fileName).c_str());
